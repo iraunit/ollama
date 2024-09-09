@@ -37,11 +37,14 @@ def ask(request: AskRequest, authorization: str = Header(None)):
     payload = {
         "model": "llama3.1",
         "prompt": request.prompt,
-        "stream": False
+        "stream": False,
+        "format": "json",
+        "options": {
+            "top_k": 20,
+            "top_p": 0.75,
+            "temperature": 0.5,
+        }
     }
-
-    if request.context:
-        payload["context"] = request.context
 
     try:
         res = requests.post('http://ollama:11434/api/generate', json=payload)
