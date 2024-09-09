@@ -9,6 +9,8 @@ services:
       - dokploy-network
     depends_on:
       - ollama
+    environment:
+      - API_KEY=${API_KEY}
   ollama:
     build: ollama
     ports:
