@@ -5,16 +5,18 @@ services:
     build: fastapi
     ports:
       - 8000:8000
-    volumes:
-      - ./fastapi:/app
+    networks:
+      - dokploy-network
+    depends_on:
+      - ollama
   ollama:
     build: ollama
     ports:
       - 11434:11434
-    volumes:
-      - tutorial-vol:/ollama
     entrypoint: ["/usr/bin/bash", "/pull-llama3.sh"]
+    networks:
+      - dokploy-network
 
-volumes:
-  tutorial-vol:
-    driver: local
+networks:
+  dokploy-network:
+    external: true
