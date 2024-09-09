@@ -12,7 +12,6 @@ API_KEY = os.getenv("API_KEY")
 
 class AskRequest(BaseModel):
     prompt: str
-    context: Optional[str] = None
 
 
 # Route to check if the FastAPI server is running
