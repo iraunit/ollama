@@ -37,12 +37,7 @@ def ask(request: AskRequest, authorization: str = Header(None)):
     payload = {
         "model": "llama3.1",
         "prompt": request.prompt,
-        "stream": False,
-        "options": {
-            "top_k": 20,
-            "top_p": 0.75,
-            "temperature": 0.5,
-        }
+        "stream": False
     }
 
     if request.context:
