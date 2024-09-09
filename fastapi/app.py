@@ -23,6 +23,7 @@ def ping():
 
 def check_authorization(auth_key: str):
     if auth_key is None or auth_key != API_KEY:
+        print(f"Invalid API key: {auth_key} {API_KEY}")
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 
