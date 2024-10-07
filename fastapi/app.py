@@ -34,7 +34,7 @@ def ask(request: AskRequest, authorization: str = Header(None)):
         return Response(status_code=401)
 
     payload = {
-        "model": "llama3.2",
+        "model": "llama3.2:3b",
         "prompt": request.prompt,
         "stream": False,
         "format": "json",
