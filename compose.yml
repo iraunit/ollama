@@ -11,6 +11,7 @@ services:
       - ollama
     environment:
       - API_KEY=${API_KEY}
+    restart: always
   ollama:
     build: ollama
     ports:
@@ -18,6 +19,7 @@ services:
     entrypoint: ["/usr/bin/bash", "/pull-llama3.sh"]
     networks:
       - dokploy-network
+    restart: always
 
 networks:
   dokploy-network:
