@@ -1,12 +1,14 @@
+import asyncio
 import os
-from typing import Optional
 
 import requests
-from fastapi import FastAPI, Response, HTTPException, Header
 from pydantic import BaseModel
 
-app = FastAPI()
+from fastapi import FastAPI, Response, HTTPException, Header
 
+app = FastAPI()
+queue_semaphore = asyncio.Semaphore(1)
+pending_requests = 0
 API_KEY = os.getenv("API_KEY")
 
 
@@ -27,7 +29,8 @@ def check_authorization(auth_key: str):
 
 
 @app.post('/ask')
-def ask(request: AskRequest, authorization: str = Header(None)):
+async def ask(request: AskRequest, authorization: str = Header(None)):
+    global pending_requests
     try:
         check_authorization(authorization)
     except HTTPException:
@@ -45,9 +48,23 @@ def ask(request: AskRequest, authorization: str = Header(None)):
         }
     }
 
-    try:
-        res = requests.post('http://ollama:11434/api/generate', json=payload)
-        res.raise_for_status()
-        return Response(content=res.text, media_type="application/json")
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
+    # try:
+    #     res = requests.post('http://ollama:11434/api/generate', json=payload)
+    #     res.raise_for_status()
+    #     return Response(content=res.text, media_type="application/json")
+    # except requests.exceptions.RequestException as e:
+    #     raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
+    pending_requests += 1
+    async with queue_semaphore:  # Wait for the semaphore before proceeding
+        try:
+            loop = asyncio.get_event_loop()
+            res = await loop.run_in_executor(
+                None, lambda: requests.post('http://ollama:11434/api/generate', json=payload)
+            )
+            res.raise_for_status()
+            return Response(content=res.text, media_type="application/json")
+        except requests.exceptions.RequestException as e:
+            raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
+        finally:
+            pending_requests -= 1
+            print(f"Pending requests: {pending_requests}")
