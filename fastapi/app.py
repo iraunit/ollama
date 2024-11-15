@@ -57,6 +57,7 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
     #     raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
     pending_requests += 1
     start_time = time.time_ns()
+    print(f"Pending requests: {pending_requests}\nLength of prompt: {len(request.prompt)}")
     async with queue_semaphore:  # Wait for the semaphore before proceeding
         try:
             loop = asyncio.get_event_loop()
