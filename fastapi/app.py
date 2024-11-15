@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 
 import requests
 from pydantic import BaseModel
@@ -7,7 +8,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI, Response, HTTPException, Header
 
 app = FastAPI()
-queue_semaphore = asyncio.Semaphore(2)
+queue_semaphore = asyncio.Semaphore(5)
 pending_requests = 0
 API_KEY = os.getenv("API_KEY")
 
@@ -55,6 +56,7 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
     # except requests.exceptions.RequestException as e:
     #     raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
     pending_requests += 1
+    start_time = time.time_ns()
     async with queue_semaphore:  # Wait for the semaphore before proceeding
         try:
             loop = asyncio.get_event_loop()
@@ -62,7 +64,7 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
                 None, lambda: requests.post('http://ollama:11434/api/generate', json=payload)
             )
             res.raise_for_status()
-            print("request completed")
+            print("request completed, time taken:", (time.time_ns() - start_time) / 1e9)
             return Response(content=res.text, media_type="application/json")
         except requests.exceptions.RequestException as e:
             raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
