@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI, Response, HTTPException, Header
 
 app = FastAPI()
-queue_semaphore = asyncio.Semaphore(1)
+queue_semaphore = asyncio.Semaphore(2)
 pending_requests = 0
 API_KEY = os.getenv("API_KEY")
 
@@ -62,6 +62,7 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
                 None, lambda: requests.post('http://ollama:11434/api/generate', json=payload)
             )
             res.raise_for_status()
+            print("request completed")
             return Response(content=res.text, media_type="application/json")
         except requests.exceptions.RequestException as e:
             raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
