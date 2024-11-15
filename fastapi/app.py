@@ -51,7 +51,7 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
 
     pending_requests += 1
     start_time = time.time_ns()
-    print(f"New request, pending requests: {pending_requests}\nLength of prompt: {len(request.prompt)}")
+    print(f"\nNew request, pending requests: {pending_requests}\nLength of prompt: {len(request.prompt)}\n")
     async with queue_semaphore:
         try:
             loop = asyncio.get_event_loop()
@@ -62,4 +62,4 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
             raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
         finally:
             pending_requests -= 1
-            print(f"Request completed.\nTime taken: {(time.time_ns() - start_time) / 1e9}\n\nPending requests: {pending_requests}")
+            print(f"\nRequest completed.\nTime taken: {(time.time_ns() - start_time) / 1e9}\nPending requests: {pending_requests}\n")
