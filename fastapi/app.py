@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI, Response, HTTPException, Header
 
 app = FastAPI()
-queue_semaphore = asyncio.Semaphore(2)
+queue_semaphore = asyncio.Semaphore(5)
 pending_requests = 0
 API_KEY = os.getenv("API_KEY")
 
@@ -50,6 +50,9 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
     }
 
     pending_requests += 1
+    if pending_requests > 10:
+        raise HTTPException(status_code=429, detail="Too many requests")
+
     start_time = time.time_ns()
     print(f"\nNew request, pending requests: {pending_requests}\nLength of prompt: {len(request.prompt)}\n")
     async with queue_semaphore:
