@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI, Response, HTTPException, Header
 
 app = FastAPI()
-queue_semaphore = asyncio.Semaphore(5)
+queue_semaphore = asyncio.Semaphore(1)
 pending_requests = 0
 API_KEY = os.getenv("API_KEY")
 
@@ -28,9 +28,34 @@ def check_authorization(auth_key: str):
         print(f"Invalid API key: {auth_key} {API_KEY}")
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-
 @app.post('/ask')
 async def ask(request: AskRequest, authorization: str = Header(None)):
+    try:
+        check_authorization(authorization)
+    except HTTPException:
+        return Response(status_code=401)
+
+    payload = {
+        "model": "llama3.2:3b",
+        "prompt": request.prompt,
+        "stream": False,
+        "format": "json",
+        "options": {
+            "top_k": 20,
+            "top_p": 0.75,
+            "temperature": 0.5,
+        }
+    }
+
+    try:
+        res = requests.post('http://ollama:11434/api/generate', json=payload)
+        res.raise_for_status()
+        return Response(content=res.text, media_type="application/json")
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
+
+@app.post('/ask-queue')
+async def ask_queue(request: AskRequest, authorization: str = Header(None)):
     global pending_requests
     try:
         check_authorization(authorization)
