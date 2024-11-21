@@ -54,16 +54,6 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
 
-@app.get('/reset-loop')
-async def reset_loop():
-    if asyncio.get_event_loop().is_running():
-        asyncio.get_event_loop().stop()
-        asyncio.get_event_loop().close()
-
-
-    asyncio.set_event_loop(asyncio.new_event_loop())
-    return Response(content="{\"message\": \"Loop reset\"}", media_type="application/json")
-
 @app.post('/ask-queue')
 async def ask_queue(request: AskRequest, authorization: str = Header(None)):
     global pending_requests
@@ -84,7 +74,7 @@ async def ask_queue(request: AskRequest, authorization: str = Header(None)):
         }
     }
 
-    if pending_requests > 5:
+    if pending_requests > 1:
         raise HTTPException(status_code=429, detail="Too many requests")
     pending_requests += 1
 
