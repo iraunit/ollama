@@ -74,9 +74,9 @@ async def ask_queue(request: AskRequest, authorization: str = Header(None)):
         }
     }
 
-    pending_requests += 1
-    if pending_requests > 10:
+    if pending_requests > 5:
         raise HTTPException(status_code=429, detail="Too many requests")
+    pending_requests += 1
 
     start_time = time.time_ns()
     print(f"\nNew request, pending requests: {pending_requests}\nLength of prompt: {len(request.prompt)}\n")
