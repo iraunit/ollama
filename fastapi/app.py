@@ -55,7 +55,7 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
         raise HTTPException(status_code=500, detail=f"Error communicating with Llama: {str(e)}")
 
 @app.get('/reset-loop')
-def reset_loop():
+async def reset_loop():
     if asyncio.get_event_loop().is_running():
         asyncio.get_event_loop().stop()
         asyncio.get_event_loop().close()
