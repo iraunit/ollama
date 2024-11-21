@@ -11,7 +11,7 @@ app = FastAPI()
 queue_semaphore = asyncio.Semaphore(1)
 pending_requests = 0
 API_KEY = os.getenv("API_KEY")
-model = "smollm2"
+model = "llama3.2:1b"
 
 class AskRequest(BaseModel):
     prompt: str
