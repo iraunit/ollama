@@ -11,7 +11,7 @@ app = FastAPI()
 queue_semaphore = asyncio.Semaphore(1)
 pending_requests = 0
 API_KEY = os.getenv("API_KEY")
-
+model = "smollm2"
 
 class AskRequest(BaseModel):
     prompt: str
@@ -36,7 +36,7 @@ async def ask(request: AskRequest, authorization: str = Header(None)):
         return Response(status_code=401)
 
     payload = {
-        "model": "llama3.2:3b",
+        "model": model,
         "prompt": request.prompt,
         "stream": False,
         "format": "json",
@@ -63,7 +63,7 @@ async def ask_queue(request: AskRequest, authorization: str = Header(None)):
         return Response(status_code=401)
 
     payload = {
-        "model": "llama3.2:3b",
+        "model": model,
         "prompt": request.prompt,
         "stream": False,
         "format": "json",
